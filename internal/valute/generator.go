@@ -16,9 +16,9 @@ func NewGenerator() *Generator {
 	return &Generator{}
 }
 
-func (g *Generator) Generate(date time.Time) (ValuteCurrencies, error) {
+func (g *Generator) Generate(date time.Time) (Currencies, error) {
 	if date.IsZero() {
-		return ValuteCurrencies{}, errors.New("date is required")
+		return Currencies{}, errors.New("date is required")
 	}
 
 	normalizedDate := truncateToDate(date.UTC())
@@ -55,7 +55,7 @@ func (g *Generator) Generate(date time.Time) (ValuteCurrencies, error) {
 		})
 	}
 
-	return ValuteCurrencies{
+	return Currencies{
 		Date:    normalizedDate,
 		Name:    "Foreign Currency Market",
 		Valutes: valutes,
@@ -243,6 +243,6 @@ func round4(v float64) float64 {
 	return math.Round(v*10000) / 10000
 }
 
-func DebugString(v ValuteCurrencies) string {
+func DebugString(v Currencies) string {
 	return fmt.Sprintf("date=%s name=%s valutes=%d", v.Date.Format("2006-01-02"), v.Name, len(v.Valutes))
 }
