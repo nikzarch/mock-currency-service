@@ -1,11 +1,9 @@
 package main
 
 import (
-	"context"
-	"fmt"
 	"github.com/nikzarch/mock-currency-service/internal/db"
 	"github.com/nikzarch/mock-currency-service/internal/valute"
-	"time"
+	"net/http"
 )
 
 func main() {
@@ -14,10 +12,7 @@ func main() {
 	generator := valute.NewGenerator()
 	repository := valute.NewPostgresRepository(pool)
 	service := valute.NewService(repository, *generator)
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	_, err := service.GetReportByDate(time.Now(), ctx)
-	if err != nil {
-		fmt.Println(err)
-	}
+	handler := valute.NewHandler(service)
+	http.Handle("/XML_daily", handler)
+	http.ListenAndServe(":8080", nil)
 }
