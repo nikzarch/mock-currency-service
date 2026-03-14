@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package valute.v1;
+
+option go_package = "github.com/nikzarch/mock-currency-service/api/proto/valute/v1;valutev1";
+
+service DailyReportService {
+  rpc GetDailyReport(GetDailyReportRequest) returns (GetDailyReportResponse);
+}
+
+message GetDailyReportRequest {
+  string date_req = 1;
+}
+
+message Valute {
+  string num_code = 1;
+  string char_code = 2;
+  int32 nominal = 3;
+  string name = 4;
+  double value = 5;
+  double vunit_rate = 6;
+}
+
+message GetDailyReportResponse {
+  string date = 1;
+  string name = 2;
+  repeated Valute valutes = 3;
+  string xml = 4;
+}

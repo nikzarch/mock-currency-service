@@ -1,0 +1,35 @@
+openapi: 3.0.3
+info:
+  title: Mock Currency Service
+  version: 1.0.0
+  description: Mock service that emulates CBR XML_daily.asp response.
+
+paths:
+  /healthz:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: OK
+
+  /scripts/XML_daily.asp:
+    get:
+      summary: Get daily currency report in XML format
+      parameters:
+        - in: query
+          name: date_req
+          required: false
+          schema:
+            type: string
+            example: 02/03/2002
+      responses:
+        '200':
+          description: XML report
+          content:
+            application/xml:
+              schema:
+                type: string
+        '400':
+          description: Invalid date format
+        '500':
+          description: Internal error or forced error mode

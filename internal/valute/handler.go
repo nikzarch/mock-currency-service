@@ -1,7 +1,7 @@
 package valute
 
 import (
-	"log"
+	"errors"
 	"net/http"
 	"time"
 )
@@ -13,29 +13,46 @@ type Handler struct {
 }
 
 func NewHandler(service Service) *Handler {
-	return &Handler{service: service}
+	return &Handler{
+		service: service,
+	}
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	reqDate := r.URL.Query()["date"]
-	dateParsed, err := time.Parse(dateFormat, reqDate[0])
-	if err != nil {
-		log.Println(err)
-		w.WriteHeader(http.StatusBadRequest)
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	currs, err := h.service.GetReportByDate(r.Context(), dateParsed)
-	if err != nil {
-		log.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
+
+	dateReq := r.URL.Query().Get("date_req")
+	if dateReq == "" {
+		http.Error(w, "date_req is required", http.StatusBadRequest)
 		return
 	}
-	report, err := MarshalXMLDaily(currs)
+
+	dateParsed, err := time.Parse(dateFormat, dateReq)
 	if err != nil {
-		log.Printf("MarshalXMLDaily error: %v\n", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, ErrInvalidDateReq.Error(), http.StatusBadRequest)
 		return
 	}
-	w.Header().Set("Content-Type", "application/xml")
-	w.Write(report)
+
+	report, err := h.service.GetReportByDate(r.Context(), dateParsed)
+	if err != nil {
+		if errors.Is(err, ErrInvalidDateReq) {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+
+	xmlReport, err := MarshalXMLDaily(report)
+	if err != nil {
+		http.Error(w, "marshal xml error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/xml; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(xmlReport)
 }

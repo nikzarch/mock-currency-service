@@ -23,10 +23,6 @@ var insertDailyReportQuery string
 //go:embed queries/insert_valute.sql
 var insertValuteQuery string
 
-var (
-	ErrNotFound = errors.New("report not found")
-)
-
 type Repository interface {
 	GetDailyReportByDate(ctx context.Context, date time.Time) (Currencies, error)
 	AddDailyReport(ctx context.Context, report Currencies) error
@@ -36,7 +32,7 @@ type PostgresRepository struct {
 	pool *pgxpool.Pool
 }
 
-func NewPostgresRepository(pool *pgxpool.Pool) Repository {
+func NewPostgresRepository(pool *pgxpool.Pool) *PostgresRepository {
 	return &PostgresRepository{pool: pool}
 }
 
@@ -134,8 +130,4 @@ func (p *PostgresRepository) AddDailyReport(ctx context.Context, report Currenci
 	}
 
 	return nil
-}
-
-func normalizeDate(dateReq time.Time) string {
-	return dateReq.Format(time.DateOnly)
 }

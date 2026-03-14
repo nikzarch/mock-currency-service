@@ -2,17 +2,16 @@ package db
 
 import (
 	"context"
-	"github.com/jackc/pgx/v5/pgxpool"
-	_ "github.com/jackc/pgx/v5/stdlib"
-	"log"
+	"fmt"
 	"os"
 	"time"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func GetPool() *pgxpool.Pool {
+func NewPool() (*pgxpool.Pool, error) {
 	dsn := os.Getenv("DB_POSTGRES_URL")
 	if dsn == "" {
-		log.Printf("DB_POSTGRES_URL is not set")
 		dsn = "postgres://postgres:1@localhost:5432/currencies"
 	}
 
@@ -21,12 +20,13 @@ func GetPool() *pgxpool.Pool {
 
 	pool, err := pgxpool.New(ctx, dsn)
 	if err != nil {
-		log.Fatalf("unable to create connection pool: %v", err)
+		return nil, fmt.Errorf("create pg pool: %w", err)
 	}
 
 	if err := pool.Ping(ctx); err != nil {
-		log.Fatalf("unable to ping database: %v", err)
+		pool.Close()
+		return nil, fmt.Errorf("ping pg: %w", err)
 	}
 
-	return pool
+	return pool, nil
 }
