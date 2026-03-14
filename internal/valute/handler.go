@@ -24,7 +24,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	currs, err := h.service.GetReportByDate(dateParsed, r.Context())
+	currs, err := h.service.GetReportByDate(r.Context(), dateParsed)
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)

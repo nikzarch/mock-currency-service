@@ -7,7 +7,7 @@ import (
 )
 
 type Service interface {
-	GetReportByDate(date time.Time, ctx context.Context) (Currencies, error)
+	GetReportByDate(ctx context.Context, date time.Time) (Currencies, error)
 }
 
 type ValuteService struct {
@@ -19,8 +19,8 @@ func NewService(repository Repository, generator Generator) Service {
 	return &ValuteService{repository: repository, generator: generator}
 }
 
-func (s *ValuteService) GetReportByDate(date time.Time, ctx context.Context) (Currencies, error) {
-	report, err := s.repository.GetDailyReportByDate(date, ctx)
+func (s *ValuteService) GetReportByDate(ctx context.Context, date time.Time) (Currencies, error) {
+	report, err := s.repository.GetDailyReportByDate(ctx, date)
 	if errors.Is(err, ErrNotFound) {
 		currs, err := s.generator.Generate(date)
 		if err != nil {
@@ -29,7 +29,7 @@ func (s *ValuteService) GetReportByDate(date time.Time, ctx context.Context) (Cu
 		// TODO: validate
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
-		err = s.repository.AddDailyReport(currs, ctx)
+		err = s.repository.AddDailyReport(ctx, currs)
 		if err != nil {
 			return Currencies{}, err
 		}

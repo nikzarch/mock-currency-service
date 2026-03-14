@@ -28,8 +28,8 @@ var (
 )
 
 type Repository interface {
-	GetDailyReportByDate(date time.Time, ctx context.Context) (Currencies, error)
-	AddDailyReport(report Currencies, ctx context.Context) error
+	GetDailyReportByDate(ctx context.Context, date time.Time) (Currencies, error)
+	AddDailyReport(ctx context.Context, report Currencies) error
 }
 
 type PostgresRepository struct {
@@ -40,7 +40,7 @@ func NewPostgresRepository(pool *pgxpool.Pool) Repository {
 	return &PostgresRepository{pool: pool}
 }
 
-func (p *PostgresRepository) GetDailyReportByDate(date time.Time, ctx context.Context) (Currencies, error) {
+func (p *PostgresRepository) GetDailyReportByDate(ctx context.Context, date time.Time) (Currencies, error) {
 	var (
 		reportID   int64
 		reportDate time.Time
@@ -96,7 +96,7 @@ func (p *PostgresRepository) GetDailyReportByDate(date time.Time, ctx context.Co
 	}, nil
 }
 
-func (p *PostgresRepository) AddDailyReport(report Currencies, ctx context.Context) error {
+func (p *PostgresRepository) AddDailyReport(ctx context.Context, report Currencies) error {
 
 	tx, err := p.pool.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
